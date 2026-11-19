@@ -27,7 +27,7 @@
   <dialog id="addDialog">
     <form id="addForm" method="dialog">
       <div class="sheet-head">
-        <h2>Add food</h2>
+        <h2 id="sheetTitle">Add food</h2>
         <button type="button" class="link" data-close>Cancel</button>
       </div>
       <div id="savedList"></div>
@@ -38,9 +38,10 @@
         <label>Carbs g<input name="carbs" inputmode="decimal" placeholder="0"></label>
         <label>Fat g<input name="fat" inputmode="decimal" placeholder="0"></label>
       </div>
-      <p class="hint">Leave kcal blank to calculate it from the macros.</p>
+      <p class="hint" id="kcalHint">Leave kcal blank to calculate it from the macros.</p>
       <label class="check"><input type="checkbox" name="save"> Save to favourites for one-tap adding</label>
-      <button class="primary" type="submit">Add</button>
+      <button class="primary" type="submit" id="sheetSubmit">Add</button>
+      <button class="danger" type="button" id="sheetDelete" hidden>Delete entry</button>
     </form>
   </dialog>
 

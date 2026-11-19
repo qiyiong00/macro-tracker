@@ -86,6 +86,15 @@ export const store = {
     write(DATA_KEY, data);
     return added;
   },
+  updateEntry(day, id, fields) {
+    const e = (data.entries[day] || []).find((x) => x.id === id);
+    if (!e) return null;
+    const before = { ...e };
+    e.name = String(fields.name || e.name).slice(0, 120);
+    for (const k of ['calories', 'protein', 'carbs', 'fat']) e[k] = num(fields[k]);
+    write(DATA_KEY, data);
+    return before;
+  },
   removeEntry(day, id) {
     data.entries[day] = (data.entries[day] || []).filter((e) => e.id !== id);
     if (!data.entries[day].length) delete data.entries[day];

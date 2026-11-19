@@ -94,6 +94,7 @@ function renderToday() {
   $('#next').onclick = () => { if (!isToday) { viewDay = shiftDay(viewDay, 1); renderToday(); } };
   $('#addBtn').onclick = openAdd;
   $('#askBtn')?.addEventListener('click', () => go('chat'));
+  view.querySelectorAll('[data-edit]').forEach((b) => b.addEventListener('click', () => openEdit(b.dataset.edit)));
   view.querySelectorAll('.del').forEach((b) =>
     b.addEventListener('click', () => {
       const e = store.entries(viewDay).find((x) => x.id === b.dataset.id);
@@ -107,11 +108,13 @@ function renderToday() {
 function entryRow(e) {
   const time = new Date(e.time).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
   return `<div class="entry">
-    <div class="main">
-      <div class="name">${esc(e.name)}${e.source === 'ai' ? '<span class="tag">AI</span>' : ''}</div>
-      <div class="meta">${time} · P ${r0(e.protein)} · C ${r0(e.carbs)} · F ${r0(e.fat)}</div>
-    </div>
-    <div class="kc">${r0(e.calories)} kcal</div>
+    <button class="edit" data-edit="${e.id}" aria-label="Edit ${esc(e.name)}">
+      <span class="main">
+        <span class="name">${esc(e.name)}${e.source === 'ai' ? '<span class="tag">AI</span>' : ''}</span>
+        <span class="meta">${time} · P ${r0(e.protein)} · C ${r0(e.carbs)} · F ${r0(e.fat)}</span>
+      </span>
+      <span class="kc">${r0(e.calories)} kcal</span>
+    </button>
     <button class="del" data-id="${e.id}" aria-label="Delete">✕</button>
   </div>`;
 }
@@ -122,11 +125,58 @@ const form = $('#addForm');
 dlg.querySelector('[data-close]').onclick = () => dlg.close();
 dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
 
+// null = adding a new food; otherwise the id of the entry being edited (on viewDay)
+let editingId = null;
+let kcalTouched = false;
+
+function setSheetMode(editing) {
+  $('#sheetTitle').textContent = editing ? 'Edit food' : 'Add food';
+  $('#sheetSubmit').textContent = editing ? 'Save changes' : 'Add';
+  $('#sheetDelete').hidden = !editing;
+  $('#kcalHint').textContent = editing
+    ? 'kcal updates when you change the macros. Clear it to recalculate.'
+    : 'Leave kcal blank to calculate it from the macros.';
+}
+
 function openAdd() {
+  editingId = null;
   form.reset();
+  setSheetMode(false);
   renderSaved();
   dlg.showModal();
 }
+
+function openEdit(id) {
+  const e = store.entries(viewDay).find((x) => x.id === id);
+  if (!e) return;
+  editingId = id;
+  kcalTouched = false;
+  form.reset();
+  setSheetMode(true);
+  $('#savedList').innerHTML = '';
+  for (const k of ['name', 'calories', 'protein', 'carbs', 'fat']) form.elements[k].value = k === 'name' ? e.name : e[k];
+  dlg.showModal();
+}
+
+// While editing, changing a macro recalculates kcal, unless you've typed a kcal value yourself.
+form.elements.calories.addEventListener('input', () => { kcalTouched = true; });
+for (const k of ['protein', 'carbs', 'fat']) {
+  form.elements[k].addEventListener('input', () => {
+    if (!editingId || kcalTouched) return;
+    const n = (name) => parseFloat(String(form.elements[name].value).replace(',', '.')) || 0;
+    form.elements.calories.value = r0(n('protein') * 4 + n('carbs') * 4 + n('fat') * 9);
+  });
+}
+
+$('#sheetDelete').addEventListener('click', () => {
+  const day = viewDay;
+  const e = store.entries(day).find((x) => x.id === editingId);
+  dlg.close();
+  if (!e) return;
+  store.removeEntry(day, e.id);
+  render();
+  toast(`Removed ${e.name}`, 'Undo', () => { store.addEntries(day, [e], e.source); render(); });
+});
 function renderSaved() {
   const list = store.saved;
   $('#savedList').innerHTML = list.length
@@ -156,9 +206,17 @@ form.addEventListener('submit', (e) => {
   const item = { name: String(f.get('name')).trim(), protein: n('protein'), carbs: n('carbs'), fat: n('fat') };
   item.calories = String(f.get('calories') || '').trim() ? n('calories') : r0(item.protein * 4 + item.carbs * 4 + item.fat * 9);
   if (!item.name) return;
-  store.addEntries(viewDay, [item]);
   if (f.get('save')) store.addSaved(item);
   dlg.close();
+  if (editingId) {
+    const day = viewDay;
+    const id = editingId;
+    const before = store.updateEntry(day, id, item);
+    render();
+    if (before) toast(`Updated ${item.name}`, 'Undo', () => { store.updateEntry(day, id, before); render(); });
+    return;
+  }
+  store.addEntries(viewDay, [item]);
   render();
 });
 

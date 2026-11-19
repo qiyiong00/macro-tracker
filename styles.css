@@ -120,6 +120,9 @@ button.link { background: none; border: 0; color: var(--accent); padding: 4px 0;
 .entry .meta { font-size: 13px; color: var(--muted); }
 .entry .kc { font-weight: 600; white-space: nowrap; }
 .entry .del { background: none; border: 0; color: var(--muted); font-size: 18px; padding: 6px; }
+.entry .edit { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; background: none; border: 0; padding: 0; margin: 0; font: inherit; color: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.entry .edit:active { opacity: 0.6; }
+.entry .edit .name, .entry .edit .meta { display: block; }
 .tag { font-size: 11px; background: var(--track); border-radius: 6px; padding: 1px 5px; margin-left: 4px; color: var(--muted); }
 
 /* forms */
