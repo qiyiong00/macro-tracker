@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Macros</title>
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Macros">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main id="view"></main>
+
+  <nav class="tabbar">
+    <button data-tab="today" class="active"><span class="ti">◎</span>Today</button>
+    <button data-tab="chat"><span class="ti">✦</span>AI Chat</button>
+    <button data-tab="history"><span class="ti">▤</span>History</button>
+    <button data-tab="settings"><span class="ti">⚙</span>Settings</button>
+  </nav>
+
+  <dialog id="addDialog">
+    <form id="addForm" method="dialog">
+      <div class="sheet-head">
+        <h2>Add food</h2>
+        <button type="button" class="link" data-close>Cancel</button>
+      </div>
+      <div id="savedList"></div>
+      <label>Food<input name="name" required placeholder="e.g. Greek yogurt 200g" autocomplete="off"></label>
+      <div class="grid4">
+        <label>kcal<input name="calories" inputmode="decimal" placeholder="auto"></label>
+        <label>Protein g<input name="protein" inputmode="decimal" placeholder="0"></label>
+        <label>Carbs g<input name="carbs" inputmode="decimal" placeholder="0"></label>
+        <label>Fat g<input name="fat" inputmode="decimal" placeholder="0"></label>
+      </div>
+      <p class="hint">Leave kcal blank to calculate it from the macros.</p>
+      <label class="check"><input type="checkbox" name="save"> Save to favourites for one-tap adding</label>
+      <button class="primary" type="submit">Add</button>
+    </form>
+  </dialog>
+
+  <div id="toast" hidden></div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
